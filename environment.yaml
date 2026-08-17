@@ -1,4 +1,12 @@
 ---
+- name: kube-infra
+  box: devopsbox/ubuntu-20.04
+  hostname: kube-infra
+  ipaddress: 172.16.1.103
+  memory: 512
+  cpus: 1
+  provision: provision/ansible/kube-infra.yaml
+
 - name: kube-master
   box: devopsbox/ubuntu-20.04
   hostname: kube-master
@@ -22,11 +30,3 @@
   memory: 2560
   cpus: 2
   provision: provision/ansible/kube-node2.yaml
-
-- name: kube-infra
-  box: devopsbox/ubuntu-20.04
-  hostname: kube-infra
-  ipaddress: 172.16.1.103
-  memory: 512
-  cpus: 1
-  provision: provision/ansible/kube-infra.yaml
