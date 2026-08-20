@@ -1,0 +1,110 @@
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: namespace-lister
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - namespaces
+    verbs:
+      - list
+      - get
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: namespace-lister
+subjects:
+  - kind: User
+    name: analista
+    apiGroup: rbac.authorization.k8s.io
+roleRef:
+  kind: ClusterRole
+  name: namespace-lister
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: analista
+  namespace: 4labs
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - pods
+      - services
+      - services/proxy
+      - configmaps
+      - secrets
+      - replicationcontrollers
+      - events
+      - pods/portforward
+      - pods/exec
+      - pods/log
+      - endpoints
+      - persistentvolumeclaims
+    verbs:
+      - get
+      - list
+      - create
+      - update
+      - patch
+      - delete
+      - watch
+  - apiGroups:
+      - apps
+    resources:
+      - deployments
+      - deployments/scale
+      - replicasets
+      - daemonsets
+      - statefulsets
+    verbs:
+      - get
+      - list
+      - create
+      - update
+      - patch
+      - delete
+      - watch
+  - apiGroups:
+      - autoscaling
+    resources:
+      - horizontalpodautoscalers
+    verbs:
+      - get
+      - list
+      - create
+      - update
+      - patch
+      - delete
+      - watch
+  - apiGroups:
+      - batch
+    resources:
+      - jobs
+      - cronjobs
+    verbs:
+      - get
+      - list
+      - create
+      - update
+      - patch
+      - delete
+      - watch
+  - apiGroups:
+      - networking.k8s.io
+    resources:
+      - ingresses
+      - networkpolicies
+    verbs:
+      - get
+      - list
+      - create
+      - update
+      - patch
+      - delete
+      - watch
