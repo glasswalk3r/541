@@ -3,6 +3,8 @@
   become: yes
   become_user: root
   become_method: sudo
+  roles:
+    - swap_management
   tasks:
     - name: Garantindo /etc/hosts
       lineinfile:
@@ -14,19 +16,6 @@
         - 172.16.1.102 kube-node2
         - 172.16.1.103 kube-infra
         - 172.16.1.202 docker-registry
-
-    - name: Remove swap do arquivo /etc/fstab
-      mount:
-        name: "{{ item }}"
-        fstype: swap
-        state: absent
-      with_items:
-        - swap
-        - none
-
-    - name: Desativa o swap
-      command: swapoff -a
-      when: ansible_swaptotal_mb > 0
 
     - name: Cria o arquivo containerd.conf
       file:
