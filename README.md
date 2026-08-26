@@ -23,16 +23,16 @@ O Laboratório será criado utilizando o [Vagrant][6]. Ferramenta para criar e g
 
 Nesse laboratório, que está centralizado no arquivo [Vagrantfile][7], sera criada 1 maquina com a seguinte característica:
 
-Nome       | vCPUs | Memoria RAM | IP            | S.O.¹           
+Nome       | vCPUs | Memoria RAM | IP            | S.O.¹
 ---------- |:-----:|:-----------:|:-------------:|:---------------:
 kube-master     | 2     | 3584MB | 172.16.1.100 | ubuntu-20.04-amd64
 kube-node1      | 2     | 2560MB | 172.16.1.101 | ubuntu-20.04-amd64
 kube-node2      | 2     | 2560MB | 172.16.1.102 | ubuntu-20.04-amd64
-kube-infra      | 1     | 512MB | 172.16.1.103 | ubuntu-20.04-amd64 
+kube-infra      | 1     | 512MB | 172.16.1.103 | ubuntu-20.04-amd64
 
 > **¹**: Esses Sistemas operacionais estão sendo utilizado no formato de Boxes, é a forma como o vagrant chama as imagens do sistema operacional utilizado.
 
-Criação do Laboratório 
+Criação do Laboratório
 ----------------------
 
 Para criar o laboratório é necessário fazer o `git clone` desse repositório e, dentro da pasta baixada realizar a execução do `vagrant up`, conforme abaixo:
@@ -72,3 +72,18 @@ Comandos                | Descrição
 [6]: https://www.vagrantup.com/
 [7]: ./Vagrantfile
 [8]: https://www.vagrantup.com/docs
+
+## Ubuntu Snap removal
+
+```bash
+systemctl stop snapd
+systemctl disable snapd
+systemctl mask snapd
+apt remove --purge snapd
+rm -rf ~/snap /var/cache/snapd /var/lib/snapd /var/log/snapd
+cat > /etc/apt/preferences.d/no-snap.pref <<EOF
+Package: snapd
+Pin: release a=*
+Pin-Priority: -10
+EOF
+```

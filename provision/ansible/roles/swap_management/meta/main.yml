@@ -1,11 +1,11 @@
-# SPDX-License-Identifier: GPL-3.0-only
+# SPDX-License-Identifier: GPL-3.0+
 ---
 galaxy_info:
   author: 4Linux
   description: Removes swap configuration (fstab entry, active swap and /swap.img) from Kubernetes cluster nodes
   company: 4Linux
 
-  license: GPL-3.0-only
+  license: GPL-3.0+
 
   min_ansible_version: '2.2'
 
