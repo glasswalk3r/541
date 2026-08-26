@@ -1,9 +1,9 @@
-#SPDX-License-Identifier: MIT-0
+# SPDX-License-Identifier: GPL-3.0-only
 ---
 # tasks file for swap_management
 
 - name: Remove swap do arquivo /etc/fstab
-  mount:
+  ansible.posix.mount:
     name: "{{ item }}"
     fstype: swap
     state: absent
@@ -11,11 +11,12 @@
     - swap
     - none
 
-- name: Desativa o swap
-  command: swapoff -a
+- name: Disables swap
+  ansible.builtin.command: swapoff -a
   when: ansible_swaptotal_mb > 0
+  changed_when: ansible_swaptotal_mb > 0
 
 - name: Remove o arquivo de swap /swap.img
-  file:
+  ansible.builtin.file:
     path: /swap.img
     state: absent
