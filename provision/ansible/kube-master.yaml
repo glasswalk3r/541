@@ -22,7 +22,7 @@
         path: /etc/modules-load.d/containerd.conf
         state: touch
 
-    - name: Configurando modulos
+    - name: Configurando módulos
       ansible.builtin.lineinfile:
         path: /etc/modules-load.d/containerd.conf
         line: "{{ item }}"
@@ -30,7 +30,7 @@
         - overlay
         - br_netfilter
 
-    - name: Carregando modulos
+    - name: Carregando módulos
       ansible.builtin.shell: modprobe overlay && modprobe br_netfilter
 
     - name: Cria o arquivo kubernetes.conf
@@ -182,11 +182,14 @@
 
     - name: Instala a rede calico no cluster
       become: false
-      ansible.builtin.command: kubectl create -f https://raw.githubusercontent.com/projectcalico/calico/v3.26.1/manifests/calico.yaml
+      ansible.builtin.command: kubectl apply -f https://raw.githubusercontent.com/projectcalico/calico/v3.26.1/manifests/calico.yaml
 
     - name: Permite que o master execute Pods como Worker
       become: false
       ansible.builtin.command: kubectl taint nodes kube-master node-role.kubernetes.io/control-plane-
+      register: taint_result
+      changed_when: taint_result.rc == 0
+      failed_when: taint_result.rc != 0 and 'not found' not in taint_result.stderr
 
     - name: Gera o comando para o join de novos nodes
       ansible.builtin.command: kubeadm token create --print-join-command
