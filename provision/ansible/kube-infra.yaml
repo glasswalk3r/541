@@ -3,6 +3,8 @@
   become: yes
   become_user: root
   become_method: sudo
+  roles:
+    - snap_removal
   tasks:
     - name: Garantindo /etc/hosts
       lineinfile:
@@ -20,7 +22,7 @@
         name: suporte
         shell: /bin/bash
         password : $1$QbUARykG$p2nthVG8AkDvabKPHwboa1
-        
+
     - name: Adiciona usuario analista
       user:
         name: analista
@@ -41,12 +43,12 @@
         - software-properties-common
         - git
         - vim
-        
+
     - name: Clona repositório com os arquivos do curso para a HOME do usuario suporte
       git:
         repo: 'https://github.com/4linux/541-kubernetes.git'
         dest: /home/suporte/541
-        
+
     - name: Garantir permissão de superusuário para o usuário analista
       lineinfile:
         path: /etc/sudoers
@@ -66,7 +68,7 @@
         owner: analista
         group: analista
         mode: '0755'
-        
+
     - name: Criando o arquivo authorized_keys
       copy:
         src: files/authorized_keys
@@ -150,7 +152,7 @@
       systemd:
         state: restarted
         name: bind9
-  
+
     - name: Adiciona uma chave de assinatura apt para o Docker
       apt_key:
         url: https://download.docker.com/linux/ubuntu/gpg
@@ -179,7 +181,7 @@
         owner: root
         group: root
         mode: '0644'
-   
+
     - name: Cria o diretorio docker.service.d
       file:
         path: /etc/systemd/system/docker.service.d
@@ -187,7 +189,7 @@
         owner: root
         group: root
         mode: '0755'
-        
+
     - name: Reinicia o Docker
       service:
         name: docker

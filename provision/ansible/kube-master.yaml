@@ -5,6 +5,7 @@
   become_method: sudo
   roles:
     - swap_management
+    - snap_removal
   tasks:
     - name: Garantindo /etc/hosts
       ansible.builtin.lineinfile:
@@ -69,7 +70,6 @@
         - software-properties-common
         - mysql-client
         - nfs-common
-        - snapd
         - git
         - vim
 

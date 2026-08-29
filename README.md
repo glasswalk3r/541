@@ -72,18 +72,3 @@ Comandos                | Descrição
 [6]: https://www.vagrantup.com/
 [7]: ./Vagrantfile
 [8]: https://www.vagrantup.com/docs
-
-## Ubuntu Snap removal
-
-```bash
-systemctl stop snapd
-systemctl disable snapd
-systemctl mask snapd
-apt remove --purge snapd
-rm -rf ~/snap /var/cache/snapd /var/lib/snapd /var/log/snapd
-cat > /etc/apt/preferences.d/no-snap.pref <<EOF
-Package: snapd
-Pin: release a=*
-Pin-Priority: -10
-EOF
-```
