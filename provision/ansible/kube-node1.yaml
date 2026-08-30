@@ -136,8 +136,10 @@
         - kubectl
 
     - name: Copia o arquivo join-command.sh
-      copy: src=join-command dest=/tmp/join-command.sh mode=0777
+      ansible.builtin.copy:
+        src: /vagrant/join-command
+        dest: /tmp/join-command.sh
+        mode: '0777'
 
     - name: Adiciona o node no cluster
-      command: sh /tmp/join-command.sh
-          
+      ansible.builtin.command: sh /tmp/join-command.sh
