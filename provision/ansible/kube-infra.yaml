@@ -7,7 +7,7 @@
     - snap_removal
   tasks:
     - name: Garantindo /etc/hosts
-      lineinfile:
+      ansible.builtin.lineinfile:
         path: /etc/hosts
         line: "{{ item }}"
       with_items:
@@ -17,20 +17,20 @@
         - 172.16.1.103 kube-infra
         - 172.16.1.202 docker-registry
 
-    - name: Adiciona usuario suporte
-      user:
+    - name: Adiciona usuário suporte
+      ansible.builtin.user:
         name: suporte
         shell: /bin/bash
         password : $1$QbUARykG$p2nthVG8AkDvabKPHwboa1
 
-    - name: Adiciona usuario analista
-      user:
+    - name: Adiciona usuário analista
+      ansible.builtin.user:
         name: analista
         shell: /bin/bash
         password : $1$QbUARykG$p2nthVG8AkDvabKPHwboa1
 
     - name: Instala pacotes que permitem que o apt seja usado sobre HTTPS
-      apt:
+      ansible.builtin.apt:
         name: "{{ packages }}"
         state: present
         update_cache: yes
@@ -44,25 +44,25 @@
         - git
         - vim
 
-    - name: Clona repositório com os arquivos do curso para a HOME do usuario suporte
-      git:
+    - name: Clona repositório com os arquivos do curso para a HOME do usuário suporte
+      ansible.builtin.git:
         repo: 'https://github.com/4linux/541-kubernetes.git'
         dest: /home/suporte/541
 
     - name: Garantir permissão de superusuário para o usuário analista
-      lineinfile:
+      ansible.builtin.lineinfile:
         path: /etc/sudoers
         state: present
         insertafter: "suporte ALL=(ALL) NOPASSWD: ALL"
         line: "analista ALL=(ALL) NOPASSWD: ALL"
 
-    - name: Clona repositório com os arquivos do curso para a HOME do usuario analista
-      git:
+    - name: Clona repositório com os arquivos do curso para a HOME do usuário analista
+      ansible.builtin.git:
         repo: 'https://github.com/4linux/541-kubernetes.git'
         dest: /home/analista/541
 
     - name: Cria o diretório .ssh
-      file:
+      ansible.builtin.file:
         path: /home/analista/.ssh
         state: directory
         owner: analista
@@ -70,7 +70,7 @@
         mode: '0755'
 
     - name: Criando o arquivo authorized_keys
-      copy:
+      ansible.builtin.copy:
         src: files/authorized_keys
         dest: /home/analista/.ssh/authorized_keys
         owner: analista
@@ -78,7 +78,7 @@
         mode: 0644
 
     - name: Criando diretório /nfs
-      file:
+      ansible.builtin.file:
         path: /nfs
         state: directory
         owner: nobody
@@ -86,7 +86,7 @@
         mode: '0775'
 
     - name: Criando diretório /backups
-      file:
+      ansible.builtin.file:
         path: /backups
         state: directory
         owner: nobody
@@ -94,7 +94,7 @@
         mode: '0775'
 
     - name: Instalando o NFS e DNS Server
-      apt:
+      ansible.builtin.apt:
         name: "{{ packages }}"
         state: present
         update_cache: yes
@@ -104,7 +104,7 @@
         - bind9
 
     - name: Criando o arquivo exports
-      lineinfile:
+      ansible.builtin.lineinfile:
         path: /etc/exports
         line: "{{ item }}"
       with_items:
@@ -112,12 +112,12 @@
         - /backups 172.16.1.0/24(rw,no_root_squash,no_subtree_check)
 
     - name: Reinicia o service do nfs-kernel-server
-      systemd:
+      ansible.builtin.systemd:
         state: restarted
         name: nfs-kernel-server
 
     - name: Criando o arquivo named.conf.local
-      copy:
+      ansible.builtin.copy:
         src: files/named.conf.local
         dest: /etc/bind
         owner: root
@@ -125,7 +125,7 @@
         mode: 0644
 
     - name: Criando o arquivo named.conf.options
-      copy:
+      ansible.builtin.copy:
         src: files/named.conf.options
         dest: /etc/bind
         owner: root
@@ -133,7 +133,7 @@
         mode: 0644
 
     - name: Criando o arquivo 4labs.example
-      copy:
+      ansible.builtin.copy:
         src: files/4labs.example
         dest: /etc/bind
         owner: root
@@ -141,7 +141,7 @@
         mode: 0644
 
     - name: Criando o arquivo 1.16.172.db
-      copy:
+      ansible.builtin.copy:
         src: files/1.16.172.db
         dest: /etc/bind
         owner: root
@@ -149,7 +149,7 @@
         mode: 0644
 
     - name: Reinicia o service do bind9
-      systemd:
+      ansible.builtin.systemd:
         state: restarted
         name: bind9
 
@@ -158,13 +158,13 @@
         url: https://download.docker.com/linux/ubuntu/gpg
         state: present
 
-    - name: Adiciona repositorio apt para versao estavel
+    - name: Adiciona repositório apt para versão estável
       apt_repository:
         repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu xenial stable
         state: present
 
     - name: Instala o Docker e suas dependencias
-      apt:
+      ansible.builtin.apt:
         name: "{{ packages }}"
         state: present
         update_cache: yes
@@ -175,7 +175,7 @@
         - containerd.io
 
     - name: Criando o arquivo daemon.json
-      copy:
+      ansible.builtin.copy:
         src: files/daemon.json
         dest: /etc/docker/
         owner: root
@@ -183,7 +183,7 @@
         mode: '0644'
 
     - name: Cria o diretorio docker.service.d
-      file:
+      ansible.builtin.file:
         path: /etc/systemd/system/docker.service.d
         state: directory
         owner: root
@@ -191,18 +191,18 @@
         mode: '0755'
 
     - name: Reinicia o Docker
-      service:
+      ansible.builtin.service:
         name: docker
         daemon_reload: yes
         state: restarted
 
-    - name: Adiciona o usuario suporte no grupo docker
-      user:
+    - name: Adiciona o usuário suporte no grupo docker
+      ansible.builtin.user:
         name: suporte
         group: docker
 
-    - name: Adiciona o usuario analista no grupo docker
-      user:
+    - name: Adiciona o usuário analista no grupo docker
+      ansible.builtin.user:
         name: analista
         group: docker
 
