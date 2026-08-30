@@ -5,9 +5,10 @@
   become_method: sudo
   roles:
     - swap_management
+    - snap_removal
   tasks:
     - name: Garantindo /etc/hosts
-      lineinfile:
+      ansible.builtin.lineinfile:
         path: /etc/hosts
         line: "{{ item }}"
       with_items:
@@ -18,28 +19,28 @@
         - 172.16.1.202 docker-registry
 
     - name: Cria o arquivo containerd.conf
-      file:
+      ansible.builtin.file:
         path: /etc/modules-load.d/containerd.conf
         state: touch
 
-    - name: Configurando modulos
-      lineinfile:
+    - name: Configurando módulos
+      ansible.builtin.lineinfile:
         path: /etc/modules-load.d/containerd.conf
         line: "{{ item }}"
       with_items:
         - overlay
         - br_netfilter
 
-    - name: Carregando modulos
-      shell: modprobe overlay && modprobe br_netfilter
+    - name: Carregando módulos
+      ansible.builtin.shell: modprobe overlay && modprobe br_netfilter
 
-    - name: Cria o arquivo dkubernetes.conf
-      file:
+    - name: Cria o arquivo kubernetes.conf
+      ansible.builtin.file:
         path: /etc/sysctl.d/kubernetes.conf
         state: touch
 
     - name: Configurando sysctl
-      lineinfile:
+      ansible.builtin.lineinfile:
         path: /etc/sysctl.d/kubernetes.conf
         line: "{{ item }}"
       with_items:
@@ -48,19 +49,18 @@
         - net.ipv4.ip_forward = 1
 
     - name: Aplicando sysctl
-      shell: sysctl --system
+      ansible.builtin.shell: sysctl --system
 
-    - name: Adiciona usuario suporte
-      user:
+    - name: Adiciona usuário suporte
+      ansible.builtin.user:
         name: suporte
         shell: /bin/bash
         password : $1$QbUARykG$p2nthVG8AkDvabKPHwboa1
 
     - name: Instala pacotes que permitem que o apt seja usado sobre HTTPS
-      apt:
+      ansible.builtin.apt:
         name: "{{ packages }}"
         state: present
-        update_cache: yes
       vars:
         packages:
         - apt-transport-https
@@ -70,70 +70,62 @@
         - software-properties-common
         - mysql-client
         - nfs-common
-        - snapd
         - git
         - vim
 
-    - name: Clona repositório com os arquivos do curso para a HOME do usuario suporte
-      git:
+    - name: Clona repositório com os arquivos do curso para a HOME do usuário suporte
+      ansible.builtin.git:
         repo: 'https://github.com/4linux/541-kubernetes.git'
         dest: /home/suporte/541
 
-    - name: Adiciona uma chave de assinatura apt para o Docker
-      apt_key:
-        url: https://download.docker.com/linux/ubuntu/gpg
-        state: present
-
-    - name: Adiciona repositorio apt para versao estavel
-      apt_repository:
-        repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu focal stable
+    - name: Adiciona repositório apt para versão estável
+      ansible.builtin.deb822_repository:
+        name: Docker
+        types: deb
+        uris: https://download.docker.com/linux/ubuntu
+        suites: "{{ ansible_distribution_release }}"
+        components: stable
+        architectures: amd64
+        signed_by: https://download.docker.com/linux/ubuntu/gpg
         state: present
 
     - name: Instala o Containerd
-      apt:
+      ansible.builtin.apt:
         name: containerd.io
         state: present
         update_cache: yes
 
     - name: Criar conf default do Containerd
-      shell: containerd config default | sudo tee /etc/containerd/config.toml >/dev/null 2>&1
+      ansible.builtin.shell: containerd config default | sudo tee /etc/containerd/config.toml >/dev/null 2>&1
 
     - name: Ativa o Systemd no arquivo config.toml
-      replace:
+      ansible.builtin.replace:
         path: /etc/containerd/config.toml
         regexp: 'SystemdCgroup = false'
         replace: 'SystemdCgroup = true'
 
-    - name: Ativa o uso de pluings no arquivo config.toml
-      replace:
+    - name: Ativa o uso de plugins no arquivo config.toml
+      ansible.builtin.replace:
         path: /etc/containerd/config.toml
         regexp: '^disabled_plugins ='
         replace: '#disabled_plugins ='
 
     - name: Reinicia o containerd
-      service:
+      ansible.builtin.service:
         name: containerd
         state: restarted
 
-    - name: Criar diretório /etc/apt/keyrings para apt do Kubernetes
-      file:
-        path: /etc/apt/keyrings
-        state: directory
-
-    - name: Adicione o repositório apt do Kubernetes ao sources.list
-      lineinfile:
-        path: /etc/apt/sources.list.d/kubernetes.list
-        line: "deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.28/deb/ /"
-        create: yes
+    - name: Adicione o repositório apt do Kubernetes
+      ansible.builtin.deb822_repository:
+        name: Kubernetes
+        types: deb
+        uris: https://pkgs.k8s.io/core:/stable:/v1.28/deb/
+        suites: /
+        signed_by: https://pkgs.k8s.io/core:/stable:/v1.28/deb/Release.key
         state: present
 
-    - name: Importar chave GPG para o sistema
-      shell: "curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.28/deb/Release.key | gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg"
-      args:
-        warn: false
-
     - name: Instala os pacotes do Kubernetes
-      apt:
+      ansible.builtin.apt:
         name: "{{ packages }}"
         state: present
         update_cache: yes
@@ -144,8 +136,10 @@
         - kubectl
 
     - name: Copia o arquivo join-command.sh
-      copy: src=join-command dest=/tmp/join-command.sh mode=0777
+      ansible.builtin.copy:
+        src: join-command
+        dest: /tmp/join-command.sh
+        mode: '0777'
 
     - name: Adiciona o node no cluster
-      command: sh /tmp/join-command.sh
-          
+      ansible.builtin.command: sh /tmp/join-command.sh

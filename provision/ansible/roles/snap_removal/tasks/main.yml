@@ -1,0 +1,42 @@
+# SPDX-License-Identifier: GPL-3.0+
+---
+# tasks file for snap_removal
+
+- name: Verifica se o pacote snapd está instalado
+  ansible.builtin.package_facts:
+    manager: apt
+
+- name: Para, desabilita e mascara o serviço snapd
+  ansible.builtin.systemd:
+    name: snapd
+    state: stopped
+    enabled: false
+    masked: true
+  when: "'snapd' in ansible_facts.packages"
+
+- name: Remove o pacote snapd
+  ansible.builtin.apt:
+    name: snapd
+    state: absent
+    purge: true
+
+- name: Remove diretórios e arquivos residuais do snap
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: absent
+  loop:
+    - "{{ ansible_env.HOME }}/snap"
+    - /var/cache/snapd
+    - /var/lib/snapd
+    - /var/log/snapd
+
+- name: Impede a reinstalação do snapd via apt
+  ansible.builtin.copy:
+    dest: /etc/apt/preferences.d/no-snap.pref
+    content: |
+      Package: snapd
+      Pin: release a=*
+      Pin-Priority: -10
+    owner: root
+    group: root
+    mode: '0644'

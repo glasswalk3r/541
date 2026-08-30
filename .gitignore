@@ -1,2 +1,4 @@
 .vagrant
 *.crt
+.python-version
+join-command
